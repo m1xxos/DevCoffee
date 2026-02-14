@@ -2,9 +2,15 @@
 
 Браузерная игра про работу бариста в кофейне в стиле Papa's Pizzeria!
 
-## 🎮 [Играть онлайн](https://m1xxos.github.io/coffe-game/)
+## 🎮 Живая версия
 
-**Живая версия игры доступна по адресу: https://m1xxos.github.io/coffe-game/**
+**Игра будет доступна онлайн после деплоя!**
+
+> **Примечание**: Для публикации по адресу https://m1xxos.github.io/coffe-game/ требуется создать новый репозиторий с именем `coffe-game`. 
+> 
+> Если использовать этот репозиторий (DevCoffee), игра будет доступна по адресу: https://m1xxos.github.io/DevCoffee/
+> 
+> 📖 Полная инструкция по деплою: см. [DEPLOYMENT.md](DEPLOYMENT.md)
 
 ## 🎮 Описание
 
@@ -64,10 +70,15 @@ python3 -m http.server 8080
 
 ```
 DevCoffee/
-├── index.html    # Основной HTML файл
-├── style.css     # Стили с пиксельной графикой
-├── game.js       # Игровая логика
-└── README.md     # Документация
+├── .github/
+│   └── workflows/
+│       └── deploy.yml    # GitHub Actions для деплоя
+├── .nojekyll             # Конфигурация GitHub Pages
+├── index.html            # Основной HTML файл
+├── style.css             # Стили с пиксельной графикой
+├── game.js               # Игровая логика
+├── README.md             # Документация
+└── DEPLOYMENT.md         # Инструкция по деплою
 ```
 
 ## 🛠️ Технологии
