@@ -15,7 +15,6 @@ const game = {
 
     // Инициализация игры
     init() {
-        console.log('DevCoffee загружена');
         this.setupEventListeners();
     },
 
@@ -153,9 +152,11 @@ const game = {
         const coffeeCup = document.getElementById('coffee-cup');
         const customerZone = document.getElementById('customer-zone');
         
-        // Сброс позиции
+        // Сброс позиции и состояния
         coffeeCup.style.transform = '';
         customerZone.classList.remove('drop-target');
+        this.dragCurrentX = 0;
+        this.dragCurrentY = 0;
     },
 
     setupDragAndDrop() {
@@ -163,22 +164,24 @@ const game = {
         const customerZone = document.getElementById('customer-zone');
         
         let isDragging = false;
-        let startX, startY, currentX = 0, currentY = 0;
+        let startX, startY;
+        this.dragCurrentX = 0;
+        this.dragCurrentY = 0;
 
         coffeeCup.addEventListener('mousedown', (e) => {
             isDragging = true;
-            startX = e.clientX - currentX;
-            startY = e.clientY - currentY;
+            startX = e.clientX - this.dragCurrentX;
+            startY = e.clientY - this.dragCurrentY;
             coffeeCup.classList.add('dragging');
         });
 
         document.addEventListener('mousemove', (e) => {
             if (!isDragging) return;
             
-            currentX = e.clientX - startX;
-            currentY = e.clientY - startY;
+            this.dragCurrentX = e.clientX - startX;
+            this.dragCurrentY = e.clientY - startY;
             
-            coffeeCup.style.transform = `translate(${currentX}px, ${currentY}px)`;
+            coffeeCup.style.transform = `translate(${this.dragCurrentX}px, ${this.dragCurrentY}px)`;
 
             // Проверка попадания в зону клиента
             const cupRect = coffeeCup.getBoundingClientRect();
@@ -209,8 +212,8 @@ const game = {
                 setTimeout(() => this.startPaymentPhase(), 1500);
             } else {
                 // Вернуть на место
-                currentX = 0;
-                currentY = 0;
+                this.dragCurrentX = 0;
+                this.dragCurrentY = 0;
                 coffeeCup.style.transform = '';
                 customerZone.classList.remove('drop-target');
             }
@@ -231,12 +234,13 @@ const game = {
         document.getElementById('payment-amount').textContent = this.currentOrder.price;
         
         // Клиент дает случайную сумму (точную или больше)
-        const amounts = [this.currentOrder.price, 200, 500, 1000];
+        const amounts = [
+            this.currentOrder.price,
+            this.currentOrder.price + 20,
+            this.currentOrder.price + 320,
+            this.currentOrder.price + 820
+        ];
         this.customerGave = amounts[Math.floor(Math.random() * amounts.length)];
-        
-        if (this.customerGave < this.currentOrder.price) {
-            this.customerGave = this.currentOrder.price;
-        }
         
         document.getElementById('customer-gave').textContent = this.customerGave;
         
