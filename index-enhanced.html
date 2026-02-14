@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevCoffee - Расширенная версия</title>
+    <link rel="stylesheet" href="style-enhanced.css">
+</head>
+<body>
+    <!-- Уведомления -->
+    <div id="notifications-container"></div>
+
+    <div id="game-container">
+        <!-- Экран приветствия -->
+        <div id="welcome-screen" class="screen active">
+            <div class="pixel-box">
+                <h1>☕ DevCoffee</h1>
+                <h2>Расширенная версия</h2>
+                <p>Управляйте кофейней, обслуживайте клиентов и развивайте бизнес!</p>
+                
+                <div class="game-modes">
+                    <button class="pixel-button" onclick="game.startGame('normal')">
+                        ☕ Обычный режим
+                    </button>
+                    <button class="pixel-button" onclick="game.startGame('rush')">
+                        ⚡ Час пик
+                    </button>
+                    <button class="pixel-button" onclick="game.startGame('evening')">
+                        🌙 Вечерняя смена
+                    </button>
+                    <button class="pixel-button" onclick="game.startGame('endless')">
+                        ♾️ Бесконечный
+                    </button>
+                </div>
+                
+                <button class="pixel-button secondary" onclick="document.getElementById('upgrades-screen').classList.add('active')">
+                    🛠️ Улучшения
+                </button>
+                
+                <button class="pixel-button secondary" onclick="document.getElementById('stats-screen').classList.add('active')">
+                    📊 Статистика
+                </button>
+            </div>
+        </div>
+
+        <!-- Игровой экран -->
+        <div id="game-screen" class="screen">
+            <!-- Верхняя панель -->
+            <div id="header">
+                <div id="stats">
+                    <span>💰 <span id="money">0</span>₽</span>
+                    <span>⭐ <span id="score">0</span></span>
+                    <span>🏆 LVL <span id="level">1</span></span>
+                    <span>🔥 Комбо: <span id="combo">0</span></span>
+                </div>
+                <div id="exp-container">
+                    <div id="exp-bar"></div>
+                </div>
+            </div>
+
+            <!-- Очередь заказов -->
+            <div id="orders-section">
+                <h3>📋 Заказы</h3>
+                <div id="orders-queue"></div>
+            </div>
+
+            <!-- События -->
+            <div id="event-banner" class="hidden">
+                <span id="event-text"></span>
+            </div>
+
+            <button class="pixel-button secondary" onclick="game.endGame()">Закончить смену</button>
+        </div>
+
+        <!-- Экран улучшений -->
+        <div id="upgrades-screen" class="screen">
+            <div class="pixel-box">
+                <h2>🛠️ Улучшения</h2>
+                
+                <div class="upgrade-list">
+                    <div class="upgrade-item">
+                        <span>⚙️ Скорость машины: <strong id="upgrade-machine">1</strong></span>
+                        <button class="pixel-button small" onclick="game.buyUpgrade('machineSpeed')">
+                            Улучшить (500₽)
+                        </button>
+                    </div>
+                    
+                    <div class="upgrade-item">
+                        <span>⏰ Терпение клиентов: <strong id="upgrade-patience">1</strong></span>
+                        <button class="pixel-button small" onclick="game.buyUpgrade('customerPatience')">
+                            Улучшить (800₽)
+                        </button>
+                    </div>
+                    
+                    <div class="upgrade-item">
+                        <span>💵 Бонус чаевых: <strong id="upgrade-tips">1</strong></span>
+                        <button class="pixel-button small" onclick="game.buyUpgrade('tipsBonus')">
+                            Улучшить (1000₽)
+                        </button>
+                    </div>
+                    
+                    <div class="upgrade-item">
+                        <span>🏪 Уровень декора: <strong id="upgrade-decor">0</strong></span>
+                        <button class="pixel-button small" onclick="game.buyUpgrade('decorLevel')">
+                            Улучшить (300₽)
+                        </button>
+                    </div>
+                </div>
+                
+                <button class="pixel-button" onclick="this.parentElement.parentElement.classList.remove('active')">
+                    Назад
+                </button>
+            </div>
+        </div>
+
+        <!-- Экран статистики -->
+        <div id="stats-screen" class="screen">
+            <div class="pixel-box">
+                <h2>📊 Статистика</h2>
+                
+                <div class="stats-list">
+                    <p>👥 Всего клиентов: <strong id="stat-customers">0</strong></p>
+                    <p>🔥 Макс комбо: <strong id="stat-combo">0</strong></p>
+                    <p>⭐ Идеальных заказов: <strong id="stat-perfect">0</strong></p>
+                    <p>💰 Всего заработано: <strong id="stat-money">0</strong>₽</p>
+                    
+                    <h3>🏆 Достижения</h3>
+                    <div id="achievements-list"></div>
+                </div>
+                
+                <button class="pixel-button" onclick="this.parentElement.parentElement.classList.remove('active')">
+                    Назад
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- МОДАЛЬНЫЕ ОКНА -->
+    
+    <!-- Модальное окно: Принятие заказа -->
+    <div id="modal-order" class="modal">
+        <div class="modal-content pixel-box">
+            <h2>🗣️ Принять заказ</h2>
+            <p id="modal-customer-type"></p>
+            <div class="speech-bubble" id="modal-order-text"></div>
+            
+            <h3>Выберите напиток:</h3>
+            <div id="modal-menu-items" class="menu-grid"></div>
+            
+            <h3>Топпинги:</h3>
+            <div id="modal-toppings-list" class="toppings-grid"></div>
+            
+            <button class="pixel-button" onclick="game.confirmOrder()">Подтвердить заказ</button>
+            <button class="pixel-button secondary" onclick="this.parentElement.parentElement.classList.remove('active')">
+                Отменить
+            </button>
+        </div>
+    </div>
+
+    <!-- Модальное окно: Приготовление -->
+    <div id="modal-prepare" class="modal">
+        <div class="modal-content pixel-box">
+            <h2>☕ Приготовление</h2>
+            <p>Заказ: <strong id="modal-prepare-name"></strong></p>
+            
+            <div id="modal-interactive-cooking" class="interactive-grid"></div>
+            
+            <div id="modal-coffee-machine">
+                <div id="modal-progress-bar">
+                    <div id="modal-progress-fill"></div>
+                </div>
+                <div id="modal-machine-status">Готов к работе</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно: Подача -->
+    <div id="modal-serve" class="modal">
+        <div class="modal-content pixel-box">
+            <h2>🚶 Отдать заказ</h2>
+            <div id="modal-serve-area">
+                <div id="modal-coffee-cup" class="draggable">
+                    <div class="pixel-icon big">☕</div>
+                    <div>Ваш заказ</div>
+                </div>
+                <div id="modal-customer-zone">
+                    <div class="pixel-icon big">👤</div>
+                    <div>Перетащите сюда</div>
+                </div>
+            </div>
+            <p>Перетащите чашку к клиенту!</p>
+        </div>
+    </div>
+
+    <!-- Модальное окно: Оплата -->
+    <div id="modal-payment" class="modal">
+        <div class="modal-content pixel-box">
+            <h2>💰 Оплата</h2>
+            <p>Сумма: <strong id="modal-payment-amount">0</strong>₽</p>
+            
+            <div id="modal-cash-register">
+                <div>Клиент дал: <span id="modal-customer-gave">0</span>₽</div>
+                <div>Сдача: <span id="modal-change-amount">0</span>₽</div>
+                
+                <div id="modal-money-buttons">
+                    <button class="money-btn pixel-button" onclick="game.addMoney(10)">10₽</button>
+                    <button class="money-btn pixel-button" onclick="game.addMoney(50)">50₽</button>
+                    <button class="money-btn pixel-button" onclick="game.addMoney(100)">100₽</button>
+                    <button class="money-btn pixel-button" onclick="game.addMoney(200)">200₽</button>
+                    <button class="money-btn pixel-button" onclick="game.addMoney(500)">500₽</button>
+                    <button class="money-btn pixel-button" onclick="game.addMoney(1000)">1000₽</button>
+                </div>
+                
+                <button class="pixel-button" onclick="game.confirmPayment()">Подтвердить</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="game-enhanced.js"></script>
+</body>
+</html>

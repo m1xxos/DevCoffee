@@ -7,10 +7,33 @@ const game = {
     totalCustomers: 0,
 
     drinks: {
-        espresso: { name: 'Эспрессо', price: 120, steps: ['Намолоть кофе', 'Утрамбовать', 'Пролить эспрессо'] },
-        latte: { name: 'Латте', price: 180, steps: ['Намолоть кофе', 'Пролить эспрессо', 'Взбить молоко', 'Влить молоко'] },
-        cappuccino: { name: 'Капучино', price: 160, steps: ['Намолоть кофе', 'Пролить эспрессо', 'Взбить молоко', 'Добавить пену'] },
-        americano: { name: 'Американо', price: 100, steps: ['Намолоть кофе', 'Пролить эспрессо', 'Добавить горячую воду'] }
+        espresso: { name: 'Эспрессо', price: 120, steps: ['grind', 'tamp', 'brew'] },
+        latte: { name: 'Латте', price: 180, steps: ['grind', 'brew', 'steam', 'pour-milk'] },
+        cappuccino: { name: 'Капучино', price: 160, steps: ['grind', 'brew', 'steam', 'add-foam'] },
+        americano: { name: 'Американо', price: 100, steps: ['grind', 'brew', 'add-water'] }
+    },
+
+    toppings: {
+        syrup_vanilla: { name: 'Ванильный сироп', price: 30, icon: '🍯', step: 'add-syrup' },
+        syrup_caramel: { name: 'Карамельный сироп', price: 30, icon: '🍮', step: 'add-syrup' },
+        syrup_hazelnut: { name: 'Ореховый сироп', price: 30, icon: '🌰', step: 'add-syrup' },
+        whipped_cream: { name: 'Взбитые сливки', price: 40, icon: '🍦', step: 'add-cream' },
+        cinnamon: { name: 'Корица', price: 10, icon: '✨', step: 'add-spice' },
+        chocolate: { name: 'Шоколад', price: 35, icon: '🍫', step: 'add-chocolate' }
+    },
+
+    stepNames: {
+        'grind': 'Намолоть кофе',
+        'tamp': 'Утрамбовать',
+        'brew': 'Пролить эспрессо',
+        'steam': 'Взбить молоко',
+        'pour-milk': 'Влить молоко',
+        'add-foam': 'Добавить пену',
+        'add-water': 'Добавить горячую воду',
+        'add-syrup': 'Добавить сироп',
+        'add-cream': 'Добавить взбитые сливки',
+        'add-spice': 'Добавить специи',
+        'add-chocolate': 'Добавить шоколад'
     },
 
     // Инициализация игры
@@ -48,17 +71,51 @@ const game = {
     startOrderPhase() {
         const drinks = Object.keys(this.drinks);
         const randomDrink = drinks[Math.floor(Math.random() * drinks.length)];
+        
+        // Случайно выбираем 0-2 топпинга
+        const toppingsList = Object.keys(this.toppings);
+        const numToppings = Math.floor(Math.random() * 3); // 0, 1 или 2
+        const selectedToppings = [];
+        const usedIndices = new Set();
+        
+        for (let i = 0; i < numToppings; i++) {
+            let randomIndex;
+            do {
+                randomIndex = Math.floor(Math.random() * toppingsList.length);
+            } while (usedIndices.has(randomIndex));
+            usedIndices.add(randomIndex);
+            selectedToppings.push(toppingsList[randomIndex]);
+        }
+        
         this.currentOrder = {
             drink: randomDrink,
             name: this.drinks[randomDrink].name,
             price: this.drinks[randomDrink].price,
-            steps: [...this.drinks[randomDrink].steps]
+            steps: [...this.drinks[randomDrink].steps],
+            toppings: selectedToppings,
+            selectedToppings: []
         };
 
-        document.getElementById('customer-speech').textContent = 
-            `Здравствуйте! Я хочу ${this.currentOrder.name}, пожалуйста!`;
+        // Добавляем стоимость топпингов
+        selectedToppings.forEach(topping => {
+            this.currentOrder.price += this.toppings[topping].price;
+        });
+
+        // Формируем текст заказа
+        let orderText = `Здравствуйте! Я хочу ${this.currentOrder.name}`;
+        if (selectedToppings.length > 0) {
+            orderText += ' с ' + selectedToppings.map(t => this.toppings[t].name.toLowerCase()).join(' и ');
+        }
+        orderText += ', пожалуйста!';
+        
+        document.getElementById('customer-speech').textContent = orderText;
         document.getElementById('order-feedback').textContent = '';
         document.getElementById('order-feedback').className = '';
+        
+        // Сбросить выбранные топпинги в UI
+        document.querySelectorAll('.topping-item').forEach(item => {
+            item.classList.remove('selected');
+        });
     },
 
     setupEventListeners() {
@@ -66,6 +123,14 @@ const game = {
         document.querySelectorAll('.menu-item').forEach(item => {
             item.addEventListener('click', (e) => this.selectDrink(e.currentTarget));
         });
+
+        // Обработка выбора топпингов
+        document.querySelectorAll('.topping-item').forEach(item => {
+            item.addEventListener('click', (e) => this.toggleTopping(e.currentTarget));
+        });
+
+        // Кнопка подтверждения заказа
+        document.getElementById('confirm-order').addEventListener('click', () => this.confirmOrder());
 
         // Обработка кнопок денег
         document.querySelectorAll('.money-btn').forEach(btn => {
@@ -80,69 +145,194 @@ const game = {
     },
 
     selectDrink(element) {
-        const selectedDrink = element.dataset.drink;
-        const feedback = document.getElementById('order-feedback');
+        // Убираем выделение со всех напитков
+        document.querySelectorAll('.menu-item').forEach(item => {
+            item.classList.remove('selected');
+        });
+        
+        // Выделяем выбранный напиток
+        element.classList.add('selected');
+        this.selectedDrink = element.dataset.drink;
+    },
 
-        if (selectedDrink === this.currentOrder.drink) {
-            feedback.textContent = '✓ Отлично! Вы правильно приняли заказ!';
-            feedback.className = 'feedback-success pulse';
-            this.score += 10;
-            this.updateStats();
-            setTimeout(() => this.startPreparationPhase(), 1500);
+    toggleTopping(element) {
+        const topping = element.dataset.topping;
+        
+        if (element.classList.contains('selected')) {
+            element.classList.remove('selected');
+            const index = this.currentOrder.selectedToppings.indexOf(topping);
+            if (index > -1) {
+                this.currentOrder.selectedToppings.splice(index, 1);
+            }
         } else {
+            element.classList.add('selected');
+            this.currentOrder.selectedToppings.push(topping);
+        }
+    },
+
+    confirmOrder() {
+        const feedback = document.getElementById('order-feedback');
+        
+        if (!this.selectedDrink) {
+            feedback.textContent = '✗ Выберите напиток!';
+            feedback.className = 'feedback-error shake';
+            return;
+        }
+
+        // Проверяем правильность напитка
+        if (this.selectedDrink !== this.currentOrder.drink) {
             feedback.textContent = '✗ Неправильный напиток! Попробуйте еще раз.';
             feedback.className = 'feedback-error shake';
-            element.classList.add('shake');
-            setTimeout(() => element.classList.remove('shake'), 300);
+            return;
         }
+
+        // Проверяем правильность топпингов
+        const correctToppings = this.currentOrder.toppings.sort().join(',');
+        const selectedToppings = this.currentOrder.selectedToppings.sort().join(',');
+        
+        if (correctToppings !== selectedToppings) {
+            feedback.textContent = '✗ Неправильные топпинги! Проверьте заказ.';
+            feedback.className = 'feedback-error shake';
+            return;
+        }
+
+        feedback.textContent = '✓ Отлично! Вы правильно приняли заказ!';
+        feedback.className = 'feedback-success pulse';
+        this.score += 10;
+        this.updateStats();
+        setTimeout(() => this.startPreparationPhase(), 1500);
     },
 
     // === МИНИ-ИГРА 2: ПРИГОТОВИТЬ ЗАКАЗ ===
     startPreparationPhase() {
         this.showScreen('prepare-screen');
-        document.getElementById('current-order-name').textContent = this.currentOrder.name;
         
-        const stepsContainer = document.getElementById('preparation-steps');
-        stepsContainer.innerHTML = '';
+        // Формируем полное название заказа
+        let fullOrderName = this.currentOrder.name;
+        if (this.currentOrder.toppings.length > 0) {
+            fullOrderName += ' с ' + this.currentOrder.toppings.map(t => this.toppings[t].name.toLowerCase()).join(', ');
+        }
+        document.getElementById('current-order-name').textContent = fullOrderName;
         
-        this.currentOrder.steps.forEach((step, index) => {
-            const stepDiv = document.createElement('div');
-            stepDiv.className = 'prep-step';
-            stepDiv.dataset.step = index;
-            stepDiv.textContent = `${index + 1}. ${step}`;
-            stepDiv.addEventListener('click', () => this.completeStep(stepDiv, index));
-            stepsContainer.appendChild(stepDiv);
+        // Добавляем шаги для топпингов
+        const allSteps = [...this.currentOrder.steps];
+        this.currentOrder.toppings.forEach(topping => {
+            allSteps.push(this.toppings[topping].step);
         });
 
+        // Создаем интерактивную зону для приготовления в РАЗНОБОЙ
+        this.setupInteractiveCooking(allSteps);
+        
         document.getElementById('progress-fill').style.width = '0%';
-        document.getElementById('machine-status').textContent = 'Выполните все шаги по порядку';
+        document.getElementById('machine-status').textContent = 'Выполняйте действия по порядку!';
         
         this.currentStepIndex = 0;
+        this.totalSteps = allSteps.length;
+        this.allSteps = allSteps;
     },
 
-    completeStep(stepElement, stepIndex) {
+    setupInteractiveCooking(steps) {
+        const interactiveArea = document.getElementById('interactive-cooking');
+        interactiveArea.innerHTML = '';
+        
+        // Иконки для разных действий
+        const icons = {
+            'grind': '⚙️',
+            'tamp': '👇',
+            'brew': '☕',
+            'steam': '💨',
+            'pour-milk': '🥛',
+            'add-foam': '🌊',
+            'add-water': '💧',
+            'add-syrup': '🍯',
+            'add-cream': '🍦',
+            'add-spice': '✨',
+            'add-chocolate': '🍫'
+        };
+        
+        // Создаем массив с индексами и перемешиваем его
+        const shuffledIndices = steps.map((_, index) => index);
+        this.shuffleArray(shuffledIndices);
+        
+        // Создаем кнопки в случайном порядке
+        shuffledIndices.forEach(index => {
+            const step = steps[index];
+            const button = document.createElement('div');
+            button.className = 'interactive-step';
+            button.dataset.step = step;
+            button.dataset.index = index;
+            
+            button.innerHTML = `
+                <div class="step-icon">${icons[step] || '🔧'}</div>
+            `;
+            
+            button.addEventListener('click', () => this.performInteractiveStep(button, step, index));
+            interactiveArea.appendChild(button);
+        });
+    },
+    
+    // Функция для перемешивания массива (алгоритм Фишера-Йейтса)
+    shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    },
+
+    performInteractiveStep(button, step, stepIndex) {
         if (stepIndex !== this.currentStepIndex) {
-            stepElement.classList.add('shake');
-            setTimeout(() => stepElement.classList.remove('shake'), 300);
+            button.classList.add('shake');
+            setTimeout(() => button.classList.remove('shake'), 300);
             document.getElementById('machine-status').textContent = 'Выполняйте шаги по порядку!';
             return;
         }
 
-        stepElement.classList.add('completed');
+        // Анимация для конкретного шага
+        button.classList.add('active');
+        this.animateStep(button, step);
+        
         this.currentStepIndex++;
         
-        const progress = (this.currentStepIndex / this.currentOrder.steps.length) * 100;
+        const progress = (this.currentStepIndex / this.totalSteps) * 100;
         document.getElementById('progress-fill').style.width = progress + '%';
         
-        if (this.currentStepIndex === this.currentOrder.steps.length) {
-            document.getElementById('machine-status').textContent = '✓ Заказ готов!';
-            this.score += 20;
-            this.updateStats();
-            setTimeout(() => this.startServePhase(), 1500);
-        } else {
-            document.getElementById('machine-status').textContent = 
-                `Шаг ${this.currentStepIndex + 1}: ${this.currentOrder.steps[this.currentStepIndex]}`;
+        setTimeout(() => {
+            if (this.currentStepIndex === this.totalSteps) {
+                document.getElementById('machine-status').textContent = '✓ Заказ готов!';
+                this.score += 20;
+                this.updateStats();
+                setTimeout(() => this.startServePhase(), 1500);
+            } else {
+                document.getElementById('machine-status').textContent = 
+                    `Следующий шаг: ${this.stepNames[this.allSteps[this.currentStepIndex]]}`;
+            }
+        }, 800);
+    },
+
+    animateStep(button, step) {
+        const icon = button.querySelector('.step-icon');
+        
+        // Разные анимации для разных действий
+        switch(step) {
+            case 'grind':
+                icon.style.animation = 'spin 0.8s ease-in-out';
+                break;
+            case 'tamp':
+                icon.style.animation = 'press 0.8s ease-in-out';
+                break;
+            case 'brew':
+                icon.style.animation = 'brew 0.8s ease-in-out';
+                break;
+            case 'steam':
+                icon.style.animation = 'steam 0.8s ease-in-out';
+                break;
+            default:
+                icon.style.animation = 'pulse 0.8s ease-in-out';
         }
+        
+        setTimeout(() => {
+            icon.style.animation = '';
+        }, 800);
     },
 
     // === МИНИ-ИГРА 3: ОТДАТЬ ЗАКАЗ ===
@@ -231,17 +421,35 @@ const game = {
     startPaymentPhase() {
         this.showScreen('payment-screen');
         
-        document.getElementById('payment-amount').textContent = this.currentOrder.price;
+        const price = this.currentOrder.price;
+        document.getElementById('payment-amount').textContent = price;
         
-        // Клиент дает случайную сумму (точную или больше)
-        const amounts = [
-            this.currentOrder.price,
-            this.currentOrder.price + 20,
-            this.currentOrder.price + 320,
-            this.currentOrder.price + 820
-        ];
-        this.customerGave = amounts[Math.floor(Math.random() * amounts.length)];
+        // Российские купюры: 10, 50, 100, 200, 500, 1000, 2000, 5000
+        const bills = [10, 50, 100, 200, 500, 1000, 2000, 5000];
         
+        // Находим подходящие купюры (больше или равно цене)
+        const suitableBills = bills.filter(bill => bill >= price);
+        
+        // Если нет подходящей одной купюры, используем комбинацию
+        let customerAmount;
+        if (suitableBills.length > 0 && Math.random() > 0.3) {
+            // 70% шанс что клиент даст одну купюру
+            customerAmount = suitableBills[Math.floor(Math.random() * suitableBills.length)];
+        } else {
+            // 30% шанс что клиент даст комбинацию купюр (округляем в большую сторону до ближайшей купюры)
+            const nextBill = bills.find(bill => bill > price);
+            if (nextBill) {
+                // Иногда дают чуть больше
+                const options = [nextBill];
+                const evenBigger = bills.find(bill => bill > nextBill);
+                if (evenBigger) options.push(evenBigger);
+                customerAmount = options[Math.floor(Math.random() * options.length)];
+            } else {
+                customerAmount = price; // Точная сумма
+            }
+        }
+        
+        this.customerGave = customerAmount;
         document.getElementById('customer-gave').textContent = this.customerGave;
         
         this.collectedMoney = 0;
