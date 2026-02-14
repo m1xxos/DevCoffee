@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevCoffee - Игра про бариста</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <div id="header">
+            <h1>☕ DevCoffee</h1>
+            <div id="stats">
+                <span>💰 Деньги: <span id="money">0</span>₽</span>
+                <span>⭐ Очки: <span id="score">0</span></span>
+                <span>👥 Клиент: <span id="customer-number">1</span></span>
+            </div>
+        </div>
+
+        <div id="game-screen">
+            <!-- Экран приветствия -->
+            <div id="welcome-screen" class="screen active">
+                <div class="pixel-box">
+                    <h2>Добро пожаловать в DevCoffee!</h2>
+                    <p>Вы - бариста в кофейне</p>
+                    <p>Обслуживайте клиентов и зарабатывайте деньги!</p>
+                    <button class="pixel-button" onclick="game.startGame()">Начать игру</button>
+                </div>
+            </div>
+
+            <!-- Мини-игра 1: Принять заказ -->
+            <div id="order-screen" class="screen">
+                <div class="pixel-box">
+                    <h2>🗣️ Принять заказ</h2>
+                    <div id="customer-speech" class="speech-bubble">
+                        Здравствуйте! Я хочу...
+                    </div>
+                    <div id="menu-items">
+                        <div class="menu-item" data-drink="espresso">
+                            <div class="pixel-icon">☕</div>
+                            <div>Эспрессо</div>
+                            <div class="price">120₽</div>
+                        </div>
+                        <div class="menu-item" data-drink="latte">
+                            <div class="pixel-icon">🥛</div>
+                            <div>Латте</div>
+                            <div class="price">180₽</div>
+                        </div>
+                        <div class="menu-item" data-drink="cappuccino">
+                            <div class="pixel-icon">☕</div>
+                            <div>Капучино</div>
+                            <div class="price">160₽</div>
+                        </div>
+                        <div class="menu-item" data-drink="americano">
+                            <div class="pixel-icon">☕</div>
+                            <div>Американо</div>
+                            <div class="price">100₽</div>
+                        </div>
+                    </div>
+                    <div id="order-feedback"></div>
+                </div>
+            </div>
+
+            <!-- Мини-игра 2: Приготовить заказ -->
+            <div id="prepare-screen" class="screen">
+                <div class="pixel-box">
+                    <h2>☕ Приготовить заказ</h2>
+                    <p>Заказ: <strong id="current-order-name"></strong></p>
+                    <div id="preparation-steps">
+                        <!-- Шаги будут добавлены динамически -->
+                    </div>
+                    <div id="coffee-machine">
+                        <div id="progress-bar">
+                            <div id="progress-fill"></div>
+                        </div>
+                        <div id="machine-status">Готов к работе</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Мини-игра 3: Отдать заказ -->
+            <div id="serve-screen" class="screen">
+                <div class="pixel-box">
+                    <h2>🚶 Отдать заказ</h2>
+                    <div id="serve-area">
+                        <div id="coffee-cup" class="draggable">
+                            <div class="pixel-icon big">☕</div>
+                            <div>Ваш заказ</div>
+                        </div>
+                        <div id="customer-zone">
+                            <div class="pixel-icon big">👤</div>
+                            <div>Перетащите сюда</div>
+                        </div>
+                    </div>
+                    <div id="serve-instruction">Перетащите чашку к клиенту!</div>
+                </div>
+            </div>
+
+            <!-- Мини-игра 4: Получить оплату -->
+            <div id="payment-screen" class="screen">
+                <div class="pixel-box">
+                    <h2>💰 Получить оплату</h2>
+                    <p>Сумма к оплате: <strong id="payment-amount">0</strong>₽</p>
+                    <div id="cash-register">
+                        <div id="customer-payment">
+                            Клиент дал: <span id="customer-gave">0</span>₽
+                        </div>
+                        <div id="change-calculation">
+                            Сдача: <span id="change-amount">0</span>₽
+                        </div>
+                        <div id="money-buttons">
+                            <button class="money-btn pixel-button" data-value="10">10₽</button>
+                            <button class="money-btn pixel-button" data-value="50">50₽</button>
+                            <button class="money-btn pixel-button" data-value="100">100₽</button>
+                            <button class="money-btn pixel-button" data-value="500">500₽</button>
+                        </div>
+                        <button id="confirm-payment" class="pixel-button">Подтвердить оплату</button>
+                    </div>
+                    <div id="payment-feedback"></div>
+                </div>
+            </div>
+
+            <!-- Экран результата -->
+            <div id="result-screen" class="screen">
+                <div class="pixel-box">
+                    <h2 id="result-title">Отлично!</h2>
+                    <p id="result-message"></p>
+                    <button class="pixel-button" onclick="game.nextCustomer()">Следующий клиент</button>
+                    <button class="pixel-button secondary" onclick="game.endGame()">Закончить смену</button>
+                </div>
+            </div>
+
+            <!-- Экран окончания игры -->
+            <div id="end-screen" class="screen">
+                <div class="pixel-box">
+                    <h2>Смена закончена!</h2>
+                    <p>Обслужено клиентов: <span id="final-customers">0</span></p>
+                    <p>Заработано денег: <span id="final-money">0</span>₽</p>
+                    <p>Итоговые очки: <span id="final-score">0</span></p>
+                    <button class="pixel-button" onclick="location.reload()">Начать заново</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>

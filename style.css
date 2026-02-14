@@ -1,0 +1,387 @@
+/* Пиксельный стиль для игры */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Courier New', monospace;
+    background: #2c3e50;
+    color: #ecf0f1;
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+    user-select: none;
+    cursor: default;
+}
+
+#game-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+#header {
+    background: #34495e;
+    padding: 20px;
+    border: 4px solid #1a252f;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 0 #1a252f;
+}
+
+#header h1 {
+    font-size: 32px;
+    text-align: center;
+    margin-bottom: 15px;
+    text-shadow: 3px 3px 0 #1a252f;
+    letter-spacing: 2px;
+}
+
+#stats {
+    display: flex;
+    justify-content: space-around;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+#stats span {
+    padding: 8px 15px;
+    background: #2c3e50;
+    border: 2px solid #1a252f;
+}
+
+.screen {
+    display: none;
+}
+
+.screen.active {
+    display: block;
+}
+
+.pixel-box {
+    background: #34495e;
+    border: 4px solid #1a252f;
+    padding: 30px;
+    box-shadow: 0 8px 0 #1a252f;
+    text-align: center;
+}
+
+.pixel-box h2 {
+    font-size: 28px;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 0 #1a252f;
+}
+
+.pixel-box p {
+    font-size: 16px;
+    margin-bottom: 15px;
+    line-height: 1.6;
+}
+
+.pixel-button {
+    background: #27ae60;
+    color: white;
+    border: 4px solid #1e8449;
+    padding: 15px 30px;
+    font-size: 18px;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    cursor: pointer;
+    margin: 10px;
+    box-shadow: 0 4px 0 #1e8449;
+    transition: all 0.1s;
+    text-transform: uppercase;
+}
+
+.pixel-button:hover {
+    background: #2ecc71;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 #1e8449;
+}
+
+.pixel-button:active {
+    transform: translateY(4px);
+    box-shadow: 0 0 0 #1e8449;
+}
+
+.pixel-button.secondary {
+    background: #7f8c8d;
+    border-color: #5d6d7e;
+    box-shadow: 0 4px 0 #5d6d7e;
+}
+
+.pixel-button.secondary:hover {
+    background: #95a5a6;
+}
+
+/* Мини-игра: Принять заказ */
+.speech-bubble {
+    background: white;
+    color: #2c3e50;
+    padding: 20px;
+    border: 4px solid #1a252f;
+    border-radius: 15px;
+    margin: 20px auto;
+    max-width: 500px;
+    font-size: 18px;
+    position: relative;
+}
+
+.speech-bubble:before {
+    content: "";
+    position: absolute;
+    bottom: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 20px solid transparent;
+    border-right: 20px solid transparent;
+    border-top: 20px solid #1a252f;
+}
+
+#menu-items {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin: 30px 0;
+}
+
+.menu-item {
+    background: #27ae60;
+    border: 4px solid #1e8449;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 0 #1e8449;
+}
+
+.menu-item:hover {
+    background: #2ecc71;
+    transform: translateY(-4px);
+    box-shadow: 0 8px 0 #1e8449;
+}
+
+.menu-item:active {
+    transform: translateY(4px);
+    box-shadow: 0 0 0 #1e8449;
+}
+
+.menu-item .pixel-icon {
+    font-size: 48px;
+    margin-bottom: 10px;
+}
+
+.menu-item div {
+    font-size: 18px;
+    font-weight: bold;
+    margin: 5px 0;
+}
+
+.menu-item .price {
+    color: #f1c40f;
+    font-size: 20px;
+}
+
+/* Мини-игра: Приготовить заказ */
+#preparation-steps {
+    margin: 20px 0;
+}
+
+.prep-step {
+    background: #2c3e50;
+    border: 3px solid #1a252f;
+    padding: 15px;
+    margin: 10px 0;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 16px;
+}
+
+.prep-step:hover:not(.completed) {
+    background: #34495e;
+    border-color: #27ae60;
+}
+
+.prep-step.completed {
+    background: #27ae60;
+    border-color: #1e8449;
+    cursor: default;
+}
+
+.prep-step.completed:before {
+    content: "✓ ";
+    font-weight: bold;
+}
+
+#coffee-machine {
+    margin-top: 30px;
+    padding: 20px;
+    background: #2c3e50;
+    border: 4px solid #1a252f;
+}
+
+#progress-bar {
+    width: 100%;
+    height: 30px;
+    background: #1a252f;
+    border: 3px solid #34495e;
+    margin-bottom: 15px;
+    position: relative;
+    overflow: hidden;
+}
+
+#progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #27ae60, #2ecc71);
+    transition: width 0.3s;
+}
+
+#machine-status {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+/* Мини-игра: Отдать заказ */
+#serve-area {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 40px 20px;
+    min-height: 300px;
+}
+
+#coffee-cup {
+    background: #8b4513;
+    border: 4px solid #654321;
+    padding: 30px;
+    cursor: move;
+    box-shadow: 0 4px 0 #654321;
+}
+
+#coffee-cup.dragging {
+    opacity: 0.7;
+    transform: scale(1.1);
+}
+
+#customer-zone {
+    background: #34495e;
+    border: 4px dashed #7f8c8d;
+    padding: 40px;
+    min-width: 200px;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#customer-zone.drop-target {
+    background: #27ae60;
+    border-color: #2ecc71;
+}
+
+.pixel-icon.big {
+    font-size: 64px;
+    margin-bottom: 10px;
+}
+
+#serve-instruction {
+    margin-top: 20px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #f1c40f;
+}
+
+/* Мини-игра: Получить оплату */
+#cash-register {
+    padding: 20px;
+}
+
+#customer-payment, #change-calculation {
+    background: #2c3e50;
+    border: 3px solid #1a252f;
+    padding: 15px;
+    margin: 15px 0;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+#customer-payment span, #change-calculation span {
+    color: #f1c40f;
+    font-size: 24px;
+}
+
+#money-buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    margin: 25px 0;
+}
+
+.money-btn {
+    background: #3498db;
+    border-color: #2980b9;
+    box-shadow: 0 4px 0 #2980b9;
+    font-size: 20px;
+    padding: 20px;
+}
+
+.money-btn:hover {
+    background: #5dade2;
+}
+
+#confirm-payment {
+    width: 100%;
+    margin-top: 20px;
+    background: #e74c3c;
+    border-color: #c0392b;
+    box-shadow: 0 4px 0 #c0392b;
+}
+
+#confirm-payment:hover {
+    background: #ec7063;
+}
+
+/* Обратная связь */
+#order-feedback, #payment-feedback {
+    margin-top: 20px;
+    padding: 15px;
+    font-size: 18px;
+    font-weight: bold;
+    border: 3px solid transparent;
+}
+
+.feedback-success {
+    background: #27ae60;
+    border-color: #1e8449 !important;
+    color: white;
+}
+
+.feedback-error {
+    background: #e74c3c;
+    border-color: #c0392b !important;
+    color: white;
+}
+
+/* Анимации */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-10px); }
+    75% { transform: translateX(10px); }
+}
+
+.shake {
+    animation: shake 0.3s;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.pulse {
+    animation: pulse 0.5s;
+}
